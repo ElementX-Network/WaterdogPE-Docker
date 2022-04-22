@@ -1,0 +1,58 @@
+name: Build Docker Image
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Lowercase ${{ github.repository_owner }}
+        id: lowercase
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          echo "::set-output name=str::${OWNER,,}"
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        env:
+          IMAGE_NAME: waterdogpe
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ steps.lowercase.outputs.str }}/$IMAGE_NAME:${{ github.event.inputs.branch }}
+          build-args: |
+            BRANCH=${{ github.event.inputs.branch }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+      - # Temp fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+        name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
