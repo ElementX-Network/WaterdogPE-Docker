@@ -1,9 +1,8 @@
 FROM maven:3.8.5-openjdk-11-slim AS build
 
 ARG BRANCH=master
-WORKDIR /build
 RUN apt-get update && apt-get install -y --no-install-recommends git && \
-    git clone https://github.com/WaterdogPE/WaterdogPE.git -b ${BRANCH} . && mvn package
+    git clone https://github.com/WaterdogPE/WaterdogPE.git -b ${BRANCH} /build && cd /build && mvn package
 
 FROM openjdk:11.0.14.1-jre-slim-buster
 
