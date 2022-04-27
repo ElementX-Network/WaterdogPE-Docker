@@ -7,11 +7,11 @@ RUN cd /build && mvn package
 
 FROM openjdk:11.0.14.1-jre-slim-buster
 
-RUN groupadd -g 1000 worker && useradd -u 1000 -g 1000 -d /waterdogpe -m worker && mkdir /data && chown 1000:1000 /waterdogpe /data -R
+RUN groupadd -g 1000 docker && useradd -u 1000 -g 1000 -d /waterdogpe -m docker && mkdir /data && chown 1000:1000 /waterdogpe /data -R
 
 COPY --from=build /build/target/Waterdog.jar /waterdogpe
 
 EXPOSE 19132/udp
-USER worker
+USER docker
 WORKDIR /data
 CMD [ "java", "-jar", "/waterdogpe/Waterdog.jar" ]
