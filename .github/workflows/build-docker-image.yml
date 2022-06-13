@@ -17,6 +17,7 @@ jobs:
           repository: WaterdogPE/WaterdogPE
       - id: get-tags
         run: |
+          cd WaterdogPE
           list_json=$((git branch -r --format "%(refname:short)" | sed -e "s/^origin\///" | tail -n+2 && git tag) | jq -R -s -c 'split("\n")[:-1]')
           echo $list_json
           echo "::set-output name=tags::${list_json}"
