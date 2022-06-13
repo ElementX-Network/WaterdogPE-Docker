@@ -9,7 +9,6 @@ env:
 jobs:
   get-tags:
     runs-on: ubuntu-20.04
-    id: get-tags
     outputs:
       tags: ${{ steps.get-tags.outputs.tags }}
     steps:
