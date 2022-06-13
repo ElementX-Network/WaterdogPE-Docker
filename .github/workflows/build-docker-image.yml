@@ -1,16 +1,30 @@
 name: Build Docker Image
 on:
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: Branch
-        required: true
+  schedule:
+    - cron: "0 0 * * "
 env:
   IMAGE_NAME: waterdogpe
 
 jobs:
+  get-tags:
+    runs-on: ubuntu-20.04
+    id: get-tags
+    outputs:
+      tags: ${{ steps.get-tags.outputs.tags }}
+    steps:
+      - id: get-tags
+        run: |
+          list_json=$((git branch -r --format "%(refname:short)" | sed -e "s/^origin\///" | tail -n+2 && git tag) | jq -R -s -c 'split("\n")[:-1]')
+          echo $list_json
+          echo "::set-output name=tags::${list_json}"
+
   build:
     runs-on: ubuntu-20.04
+    needs: get-tags
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{ fromJson(needs.get-tags.outputs.tags) }}
 
     steps:
       - name: Checkout
@@ -45,9 +59,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ steps.lowercase.outputs.str }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.branch }}
+          tags: ghcr.io/${{ steps.lowercase.outputs.str }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}
           build-args: |
-            BRANCH=${{ github.event.inputs.branch }}
+            BRANCH=${{ matrix.tag }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
       - # Temp fix
