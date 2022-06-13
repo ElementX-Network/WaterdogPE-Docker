@@ -12,6 +12,9 @@ jobs:
     outputs:
       tags: ${{ steps.get-tags.outputs.tags }}
     steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: WaterdogPE/WaterdogPE
       - id: get-tags
         run: |
           list_json=$((git branch -r --format "%(refname:short)" | sed -e "s/^origin\///" | tail -n+2 && git tag) | jq -R -s -c 'split("\n")[:-1]')
