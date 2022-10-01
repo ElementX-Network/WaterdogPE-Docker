@@ -56,13 +56,17 @@ jobs:
           OWNER: ${{ github.repository_owner }}
         run: |
           echo "::set-output name=str::${OWNER,,}"
+      - id: normalize-tag
+        run: |
+          VALUE=$(echo ${{ matrix.tag }} | sed 's/\//-/g')
+          echo "::set-output name=value::${VALUE}"
       - name: Build and push
         uses: docker/build-push-action@v2
 
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ steps.lowercase.outputs.str }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}
+          tags: ghcr.io/${{ steps.lowercase.outputs.str }}/${{ env.IMAGE_NAME }}:${{ steps.normalize-tag.outputs.value }}
           build-args: |
             BRANCH=${{ matrix.tag }}
           cache-from: type=local,src=/tmp/.buildx-cache
