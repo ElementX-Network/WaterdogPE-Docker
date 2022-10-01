@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends git
 RUN git clone https://github.com/WaterdogPE/WaterdogPE.git -b ${BRANCH} /build
 RUN cd /build && mvn package
 
-FROM amazoncorretto:${JAVA_VER}
+FROM openjdk:${JAVA_VER}-jdk-slim
 
 COPY --from=build /build/target/Waterdog.jar /
 EXPOSE 19132/udp
