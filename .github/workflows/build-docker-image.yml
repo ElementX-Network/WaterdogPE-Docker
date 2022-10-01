@@ -56,6 +56,10 @@ jobs:
           OWNER: ${{ github.repository_owner }}
         run: |
           echo "::set-output name=str::${OWNER,,}"
+      - id: java-version
+        run: |
+          JAVA_VER=$(curl -sS https://raw.githubusercontent.com/WaterdogPE/WaterdogPE/${{ matrix.tag }}/.github/workflows/maven-build.yml | awk '/java-version:/ {print $2}')
+          echo "::set-output name=value::${JAVA_VER}"
       - name: Build and push
         uses: docker/build-push-action@v2
 
@@ -65,6 +69,7 @@ jobs:
           tags: ghcr.io/${{ steps.lowercase.outputs.str }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}
           build-args: |
             BRANCH=${{ matrix.tag }}
+            JAVA_VER=${{ steps.java-version.outputs.value }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
       - # Temp fix
