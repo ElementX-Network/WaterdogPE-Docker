@@ -15,7 +15,7 @@ jobs:
       - name: get tags
         id: get-tags
         run: |
-          list_json=((for i in branches tags; do
+          list_json=$((for i in branches tags; do
             curl -sS https://api.github.com/repos/WaterdogPE/WaterdogPE/$i | jq .[].name
           done) | jq -sc)
           echo $list_json
