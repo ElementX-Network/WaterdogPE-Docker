@@ -60,13 +60,17 @@ jobs:
         run: |
           JAVA_VER=$(curl -sS https://raw.githubusercontent.com/WaterdogPE/WaterdogPE/${{ matrix.tag }}/.github/workflows/maven-build.yml | awk '/java-version:/ {print $2}')
           echo "::set-output name=value::${JAVA_VER}"
+      - id: normalize-tag
+        run: |
+          VALUE=$(echo ${{ matrix.tag }} | sed 's/\//-/g')
+          echo "::set-output name=value::${VALUE}"
       - name: Build and push
         uses: docker/build-push-action@v2
 
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ steps.lowercase.outputs.str }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}
+          tags: ghcr.io/${{ steps.lowercase.outputs.str }}/${{ env.IMAGE_NAME }}:${{ steps.normalize-tag.outputs.value }}
           build-args: |
             BRANCH=${{ matrix.tag }}
             JAVA_VER=${{ steps.java-version.outputs.value }}
